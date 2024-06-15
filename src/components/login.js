@@ -18,12 +18,14 @@ const Login = ({ onOk }) => {
         );
 
         if (user) {
-          // Başarı durumunda modalı kapat ve başarı mesajı göster
-          onOk();
-          
+          // Başarı durumunda onOk fonksiyonunu çağır ve kullanıcı bilgilerini geçir
+          onOk({
+            Kullanici_Ad: user.kullanici_ad,
+            Kullanici_Soyad: user.kullanici_soyad,
+          });
         } else {
           // Hata mesajı göster
-          message.error("Invalid email or password. Please try again.");
+          message.error("Geçersiz email veya şifre. Lütfen tekrar deneyin.");
         }
       });
     } catch (error) {

@@ -7,7 +7,7 @@ const App = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState({});
+  const [userInfo, setUserInfo] = useState({ Kullanici_Ad: '', Kullanici_Soyad: '' });
 
   const showLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -19,7 +19,7 @@ const App = () => {
 
   const handleLoginOk = (userData) => {
     setIsLoggedIn(true);
-    setUserInfo(userData);
+    setUserInfo(userData); // Kullanıcı bilgilerini userInfo'ye ata
     setIsLoginModalOpen(false);
     message.success('Giriş başarılı!');
   };
@@ -35,7 +35,7 @@ const App = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setUserInfo({}); // Kullanıcı çıkış yaptığında userInfo'yi sıfırla
+    setUserInfo({ Kullanici_Ad: '', Kullanici_Soyad: '' }); // Kullanıcı çıkış yaptığında userInfo'yi sıfırla
   };
 
   return (
@@ -44,7 +44,7 @@ const App = () => {
         {isLoggedIn ? (
           <div>
             <span style={{ marginRight: '10px' }}>
-              Hoşgeldiniz {userInfo?.Kullanici_Ad} {userInfo?.Kullanici_Soyad}
+              Hoşgeldiniz , {userInfo?.Kullanici_Ad} {userInfo?.Kullanici_Soyad}
             </span>
             <Button type="primary" onClick={handleLogout}>
               Çıkış Yap
