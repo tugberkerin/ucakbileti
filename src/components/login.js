@@ -8,7 +8,7 @@ const Login = ({ onOk }) => {
       // Kullanıcıyı doğrulamak için API'ye GET isteği gönderme
       axios({
         method: "get",
-        url: "https://v1.nocodeapi.com/tugberkerin/google_sheets/hyvNPOQnfgdMEGWx?tabId=sayfa1",
+        url: "url",
       }).then(function (response) {
         const users = response.data.data;
 

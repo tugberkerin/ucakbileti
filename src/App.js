@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Button, Modal, message } from 'antd';
 import Login from './components/login.js';
 import Register from './components/register.js';
+import FlightComponent from './components/ucus.js'; // Uçuş bileşenini içe aktarıyoruz
 
 const App = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState({ Kullanici_Ad: '', Kullanici_Soyad: '' });
+  const [userInfo, setUserInfo] = useState({ kullanici_ad: '', kullanici_soyad: '' });
 
   const showLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -35,7 +36,7 @@ const App = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setUserInfo({ Kullanici_Ad: '', Kullanici_Soyad: '' }); // Kullanıcı çıkış yaptığında userInfo'yi sıfırla
+    setUserInfo({ kullanici_ad: '', kullanici_soyad: '' }); // Kullanıcı çıkış yaptığında userInfo'yi sıfırla
   };
 
   return (
@@ -44,7 +45,7 @@ const App = () => {
         {isLoggedIn ? (
           <div>
             <span style={{ marginRight: '10px' }}>
-              Hoşgeldiniz , {userInfo?.Kullanici_Ad} {userInfo?.Kullanici_Soyad}
+              Hoşgeldiniz  {userInfo?.kullanici_ad} {userInfo?.kullanici_soyad}
             </span>
             <Button type="primary" onClick={handleLogout}>
               Çıkış Yap
@@ -77,6 +78,11 @@ const App = () => {
       >
         <Register onOk={handleRegisterOk} />
       </Modal>
+
+      {/* Uçuş Bileşenini çağırıyoruz */}
+      <div style={{ marginTop: '50px', padding: '20px' }}>
+        <FlightComponent />
+      </div>
     </>
   );
 };
