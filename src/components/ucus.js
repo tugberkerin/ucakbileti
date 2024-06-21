@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Select, Input, Checkbox, Table } from "antd";
+import { Select, Input, Checkbox, Table, Button, message, Modal, Flex } from "antd";
 import moment from "moment";
+import Sepet from "./sepet.js"; // Sepet bileşenini import ediyoruz
 
 const { Option } = Select;
 
@@ -18,30 +19,31 @@ const FlightComponent = () => {
     sortKriter: "",
     userUcusSure: "",
   });
-
+  const [cart, setCart] = useState([]);
   const [departureOptions, setDepartureOptions] = useState([]);
   const [arrivalOptions, setArrivalOptions] = useState([]);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   useEffect(() => {
     axios
       .get(
-        "https://v1.nocodeapi.com/tugberkerin/google_sheets/lKtPiXASrCWbOpJM?tabId=sayfa1"
+        "https://v1.nocodeapi.com/yedekhesap/google_sheets/QiAyIBfNeFVcFLId?tabId=sayfa1"
       )
       .then((response) => {
         const rows = response.data.data;
 
         const flightData = rows.map((row) => ({
-          key: row.id, // unique key for each flight item
+          key: row.id,
           kalkis_yeri: row.kalkis_yeri,
           varis_yeri: row.varis_yeri,
           tarih: moment(row.bilet_tarihi, "DD.MM.YYYY").format("YYYY-MM-DD"),
           ucak_kod: row.ucak_kod,
           sirket: row.sirket_ad,
           aktarma: row.aktarma === "1" ? "Var" : "Yok",
-          fiyat: parseFloat(row.fiyat.replace(".", "").replace(",", ".")), // Fiyatı sayıya çevir
-          ucus_sure: row.ucus_sure, // Uçuş süresini ham veri olarak sakla
+          fiyat: parseFloat(row.fiyat.replace(".", "").replace(",", ".")),
+          ucus_sure: row.ucus_sure,
           koltuk_no: row.koltuk_no,
-          koltuk_dolubos: row.koltuk_dolubos === "1" ? "Dolu" : "Boş", // Koltuk durumu verisini ekleyin
+          koltuk_dolubos: row.koltuk_dolubos === "1" ? "Dolu" : "Boş",
         }));
 
         setFlights(flightData);
@@ -99,7 +101,7 @@ const FlightComponent = () => {
           return bDuration - aDuration;
         });
       default:
-        return flights.slice(); // Eğer kriter belirtilmemişse sıralamadan önceki haliyle döndür
+        return flights.slice();
     }
   };
 
@@ -128,20 +130,46 @@ const FlightComponent = () => {
           return flightDurationMinutes <= userUcusSureMinutes;
         });
       }
-
       filtered = sortFlights(filtered, filters.sortKriter);
-
-      // Uçuş süresini saat, dakika ve saniye formatına çevir
       filtered = filtered.map((flight) => ({
         ...flight,
         formattedUcusSure: formatDuration(flight.ucus_sure),
       }));
-
       setFilteredFlights(filtered);
     }
   }, [filters, flights]);
 
-  // Ant Design Table için kullanılacak sütun yapılandırması
+  const handleAddToCart = (flight) => {
+    // Koltuğun dolu olup olmadığını kontrol ediyoruz
+    if (flight.koltuk_dolubos === "Boş") {
+      // Koltuğun sepete daha önce eklenip eklenmediğini kontrol ediyoruz
+      const alreadyInCart = cart.some(
+        (item) => item.koltuk_no === flight.koltuk_no
+      );
+
+      if (!alreadyInCart) {
+        setCart([...cart, flight]); // Yeni koltuğu cart state'ine ekliyoruz
+        message.success("Koltuk sepete eklendi.");
+      } else {
+        message.warning("Bu koltuk numarası zaten sepetinizde bulunmaktadır.");
+      }
+    } else {
+      message.warning("Bu koltuk dolu olduğu için sepete eklenemez.");
+    }
+  };
+
+  const handleRemoveFromCart = (key) => {
+    setCart((prevCart) => prevCart.filter((item) => item.key !== key));
+  };
+
+  const handleOpenCartModal = () => {
+    setIsCartModalOpen(true);
+  };
+
+  const handleCloseCartModal = () => {
+    setIsCartModalOpen(false);
+  };
+
   const columns = [
     {
       title: "Kalkış Yeri",
@@ -194,6 +222,7 @@ const FlightComponent = () => {
         multiple: 1,
       },
       render: (fiyat) => `${fiyat.toFixed(2)} TRY`,
+
     },
     {
       title: "Uçuş Süresi",
@@ -223,11 +252,24 @@ const FlightComponent = () => {
       dataIndex: "koltuk_dolubos",
       key: "koltuk_dolubos",
     },
+    {
+      title: "Aksiyon",
+      key: "action",
+      render: (text, record) => (
+        <Button
+          type="primary"
+          onClick={() => handleAddToCart(record)}
+          disabled={record.koltuk_dolubos === "Dolu"}
+        >
+          Sepete Ekle
+        </Button>
+      ),
+    },
   ];
 
   return (
     <div>
-     <h1>Uçuş Bilgileri</h1>
+      <h1>Uçuş Bilgileri</h1>
       <div>
         <Select
           showSearch
@@ -286,8 +328,25 @@ const FlightComponent = () => {
         >
           Aktarmasız Uçuşlar
         </Checkbox>
+        <div style={{ marginTop: 20 }}>
+          <Button type="primary" onClick={handleOpenCartModal}>
+            Sepetim ({cart.length})
+          </Button>
+          <Modal
+          width={Flex}
+            title="Sepetim"
+            visible={isCartModalOpen}
+            onCancel={handleCloseCartModal}
+            footer={[
+              <Button key="close" onClick={handleCloseCartModal}>
+                Kapat
+              </Button>,
+            ]}
+          >
+            <Sepet cart={cart} handleRemoveFromCart={handleRemoveFromCart} />
+          </Modal>
+        </div>
       </div>
-
       <div>
         <h2>Filtrelenmiş Uçuşlar</h2>
         <Table
@@ -297,7 +356,9 @@ const FlightComponent = () => {
           onChange={(_, __, sorter) => {
             if (sorter) {
               const { columnKey, order } = sorter;
-              const sortKriter = `${columnKey}-${order === "descend" ? "desc" : "asc"}`;
+              const sortKriter = `${columnKey}-${
+                order === "descend" ? "desc" : "asc"
+              }`;
               handleFilterChange("sortKriter", sortKriter);
             }
           }}
@@ -308,4 +369,3 @@ const FlightComponent = () => {
 };
 
 export default FlightComponent;
-
