@@ -1,7 +1,10 @@
-import React from "react";
-import { Table, Button } from "antd";
+import React, { useState } from 'react';
+import { Table, Button, Modal } from 'antd';
+import OdemeModal from './odemeModal.js'; // OdemeModal bileşenini import edin
 
-const Sepet = ({ cart, handleRemoveFromCart }) => {
+const Sepet = ({ cart, handleRemoveFromCart, userInfo, onSuccessPayment }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  
   const columns = [
     {
       title: "Kalkış Yeri",
@@ -38,7 +41,6 @@ const Sepet = ({ cart, handleRemoveFromCart }) => {
       dataIndex: "fiyat",
       key: "fiyat",
       render: (fiyat) => `${fiyat.toFixed(2)} TRY`,
-
     },
     {
       title: "Uçuş Süresi",
@@ -61,23 +63,33 @@ const Sepet = ({ cart, handleRemoveFromCart }) => {
     },
   ];
 
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
   return (
-    <Table
-      columns={columns}
-      dataSource={cart}
-      pagination={false}
-      rowKey={(record) => record.key}
-      footer={() => (
-        <div style={{ textAlign: "right", fontWeight: "bold" }}>
-          Toplam Fiyat:{" "}
-          {cart.reduce((total, item) => total + item.fiyat, 0).toFixed(2)} TRY
-        
-        
-        
-        </div>
-        
-      )}
-    />
+    <div>
+      <Table
+        columns={columns}
+        dataSource={cart}
+        pagination={false}
+        rowKey={(record) => record.key}
+        footer={() => (
+          <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
+            Toplam Fiyat: {cart.reduce((total, item) => total + item.fiyat, 0).toFixed(2)} TRY
+          </div>
+        )}
+      />
+      <Button type="primary" onClick={() => setModalVisible(true)}>
+        Ödeme Yap
+      </Button>
+      <OdemeModal
+        visible={modalVisible}
+        handleCloseModal={handleCloseModal}
+        userInfo={userInfo}
+        onSuccessPayment={onSuccessPayment}
+      />
+    </div>
   );
 };
 

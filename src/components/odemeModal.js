@@ -1,61 +1,43 @@
-import React, { useState } from 'react';
-import { Button, Modal, Form, Input, message } from 'antd';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Button, Modal, Form, Input, notification } from "antd";
+import { duration } from "moment";
 
-const OdemeModal = ({ userInfo, handleCloseModal, onSuccessPayment }) => {
+const OdemeModal = ({ visible, handleCloseModal, onSuccessPayment }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   const handleOk = async () => {
     try {
       setLoading(true);
-
-      // Ödeme işlemlerini burada yapabilirsiniz, örneğin API ile kart bilgilerini kontrol edebilirsiniz
-      // Burada sadece örnek bir işlem yapılıyor
-
-      // Kullanıcı bilgilerini alalım
-      const { kart_no, kart_ay, kart_yil, kart_cvv } = form.getFieldsValue();
-
-      // API'ye kullanıcının kart bilgileri ile bir istek gönderelim
-      // Bu adımı, gerçek bir ödeme sağlayıcı entegrasyonu ve güvenlik doğrulamalarıyla uygulamak önemlidir
-
-      // Örnek: Kart bilgilerini kontrol eden bir API çağrısı
-      const response = await axios.post('/api/odeme-kontrol', {
-        kart_no,
-        kart_ay,
-        kart_yil,
-        kart_cvv,
-        kullanici_id: userInfo.id, // Örnekte userInfo'da kullanıcı ID'si varsa kullanıyorum
+      await form.validateFields();
+      // Ödeme işlemi yapıldı bildirimi
+      notification.success({
+        message: "Ödeme Başarılı",
+        description: "Ödeme yapılmıştır. Fatura mail olarak gönderilmiştir.",
       });
-
-      if (response.data.success) {
-        // Başarılı bir şekilde ödeme yapıldı
-        onSuccessPayment();
-        message.success('Ödeme işlemi başarıyla tamamlandı!');
-      } else {
-        // Ödeme işlemi başarısız oldu
-        message.error('Ödeme işlemi başarısız oldu. Lütfen tekrar deneyin.');
-      }
-
+      onSuccessPayment();
+      form.resetFields(); // Formu temizle
+      handleCloseModal({duration:0.10}); // Modalı kapat
+    } catch (errorInfo) {
+      console.error("Ödeme işlemi sırasında bir hata oluştu:", errorInfo);
+    } finally {
       setLoading(false);
-      handleCloseModal();
-    } catch (error) {
-      console.error('Ödeme işlemi sırasında bir hata oluştu:', error);
-      setLoading(false);
-      message.error('Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.');
     }
+  };
+
+  const handleCancel = () => {
+    form.resetFields(); // Formu temizle
+    handleCloseModal(); // Modalı kapat
   };
 
   return (
     <Modal
       title="Ödeme Yap"
-      visible={true}
-      onCancel={handleCloseModal}
+      visible={visible}
+      onCancel={handleCancel}
+      onOk={handleOk}
       footer={[
-        <Button key="back" onClick={handleCloseModal}>
-          İptal
-        </Button>,
-        <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+        <Button key="submit" type="primary" loading={loading} onClick={handleOk}  >
           Ödeme Yap
         </Button>,
       ]}
@@ -65,8 +47,8 @@ const OdemeModal = ({ userInfo, handleCloseModal, onSuccessPayment }) => {
           label="Kart Numarası"
           name="kart_no"
           rules={[
-            { required: true, message: 'Lütfen kart numaranızı girin!' },
-            { pattern: /^[0-9]{16}$/, message: 'Geçersiz kart numarası!' },
+            { required: true, message: "Lütfen kart numaranızı girin!" },
+            { pattern: /^[0-9]{16}$/, message: "Geçersiz kart numarası!" },
           ]}
         >
           <Input />
@@ -77,16 +59,16 @@ const OdemeModal = ({ userInfo, handleCloseModal, onSuccessPayment }) => {
             <Form.Item
               name="kart_ay"
               noStyle
-              rules={[{ required: true, message: 'Ay bilgisini girin!' }]}
+              rules={[{ required: true, message: "Ay bilgisini girin!" },{ pattern: /^[0-9]{2}$/, message: "Geçersiz kart numarası!" },]}
             >
-              <Input style={{ width: '50%' }} placeholder="Ay" />
+              <Input style={{ width: "50%" }} placeholder="Ay" />
             </Form.Item>
             <Form.Item
               name="kart_yil"
               noStyle
-              rules={[{ required: true, message: 'Yıl bilgisini girin!' }]}
+              rules={[{ required: true, message: "Yıl bilgisini girin!" },{ pattern: /^[0-9]{2}$/, message: "Geçersiz kart numarası!" },]}
             >
-              <Input style={{ width: '50%' }} placeholder="Yıl" />
+              <Input style={{ width: "50%" }} placeholder="Yıl" />
             </Form.Item>
           </Input.Group>
         </Form.Item>
@@ -94,7 +76,7 @@ const OdemeModal = ({ userInfo, handleCloseModal, onSuccessPayment }) => {
         <Form.Item
           label="CVV"
           name="kart_cvv"
-          rules={[{ required: true, message: 'Lütfen CVV numaranızı girin!' }]}
+          rules={[{ required: true, message: "Lütfen CVV numaranızı girin!" },{ pattern: /^[0-9]{3}$/, message: "Geçersiz kart numarası!" },]}
         >
           <Input />
         </Form.Item>
