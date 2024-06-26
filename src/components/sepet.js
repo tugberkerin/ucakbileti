@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Modal } from 'antd';
+import { Table, Button } from 'antd';
 import OdemeModal from './odemeModal.js'; // OdemeModal bileşenini import edin
 
 const Sepet = ({ cart, handleRemoveFromCart, userInfo, onSuccessPayment }) => {

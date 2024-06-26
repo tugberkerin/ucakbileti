@@ -5,32 +5,23 @@ import axios from "axios";
 const Login = ({ onOk }) => {
   const onFinish = async (values) => {
     try {
-      // Kullanıcıyı doğrulamak için API'ye GET isteği gönderme
-      axios({
-        method: "get",
-        url: "https://v1.nocodeapi.com/yedekhesap/google_sheets/StIYAOTjYArHcRUE?tabId=sayfa1",
-      }).then(function (response) {
-        const users = response.data.data;
+      const response = await axios.get("https://v1.nocodeapi.com/yedekhesap/google_sheets/StIYAOTjYArHcRUE?tabId=sayfa1");
+      const users = response.data.data;
+      const user = users.find(
+        (user) => user.mail === values.email && user.sifre === values.password
+      );
 
-        // Kullanıcı doğrulaması
-        const user = users.find(
-          (user) => user.mail === values.email && user.sifre === values.password
-        );
-
-        if (user) {
-          // Başarı durumunda onOk fonksiyonunu çağır ve kullanıcı bilgilerini geçir
-          onOk({
-            Kullanici_Ad: user.kullanici_ad,
-            Kullanici_Soyad: user.kullanici_soyad,
-          });
-        } else {
-          // Hata mesajı göster
-          message.error("Geçersiz email veya şifre. Lütfen tekrar deneyin.");
-        }
-      });
+      if (user) {
+        onOk({
+          Kullanici_Ad: user.kullanici_ad,
+          Kullanici_Soyad: user.kullanici_soyad,
+        });
+      } else {
+        message.error("Geçersiz email veya şifre. Lütfen tekrar deneyin.");
+      }
     } catch (error) {
       console.error("Error:", error);
-      message.error("Login failed. Please check your email and password.");
+      message.error("Giriş başarısız oldu. Lütfen e-postanızı ve şifrenizi kontrol edin.");
     }
   };
 
@@ -54,15 +45,15 @@ const Login = ({ onOk }) => {
         label="Email"
         name="email"
         rules={[
-          { required: true, message: "Please input your email!" },
-          { type: "email", message: "The input is not valid E-mail!" },
+          { required: true, message: "Lütfen e-postanızı girin!" },
+          { type: "email", message: "Giriş geçerli değil E-posta!" },
         ]}
       >
         <Input />
       </Form.Item>
 
       <Form.Item
-        label="Password"
+        label="Şifre"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
